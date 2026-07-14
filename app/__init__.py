@@ -1,0 +1,1 @@
+"""FastAPI practice application package."""
