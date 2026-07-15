@@ -490,8 +490,48 @@ apis → services → repositories → models → core
 
 따라서 이후 과제에서는 ERD와 API 요구사항을 기준으로 각 계층에 기능별 파일을 추가해야 한다. 이때 모델부터 API까지 한 기능의 이름을 일관되게 사용하고, `main.py`에는 애플리케이션 조립과 Router 등록만 남기는 방향이 적절하다.
 
+### 2.10 참고 프로젝트 구조와 현재 템플릿 비교
+
+학습 자료인 「Structuring a FastAPI Project: Best Practices」에서는 다음 구조를 예시로 제시한다.
+
+```text
+app/
+├── main.py
+├── dependencies.py
+├── routers/
+├── internal/
+├── core/
+├── models/
+├── schemas/
+├── services/
+└── db/
+```
+
+FastAPI 프로젝트에 반드시 하나의 정답 구조가 있는 것은 아니다. 프로젝트 규모, 팀 규칙, 데이터베이스 접근 방식에 따라 디렉터리 이름과 계층 수가 달라질 수 있다. 첨부된 학습 자료와 현재 과제 템플릿의 개념은 다음과 같이 대응한다.
+
+| 학습 자료의 구조 | 현재 템플릿 | 차이 및 해석 |
+| --- | --- | --- |
+| `app/routers/` | `app/apis/` | 이름은 다르지만 `APIRouter`와 엔드포인트를 관리하는 동일한 역할이다. |
+| `app/db/` | `app/core/db/` | 현재 템플릿은 DB 연결을 프로젝트 공통 기반인 `core` 안에 배치했다. |
+| `app/dependencies.py` | `app/core/db/databases.py` 등 | 현재 템플릿은 DB 세션 의존성 `async_get_db()`를 DB 설정 파일에 함께 둔다. 공통 의존성이 많아지면 별도 파일로 분리할 수 있다. |
+| `app/internal/` | 별도 디렉터리 없음 | 관리자 전용 API가 필요하면 `app/apis/admin.py` 또는 별도의 `internal` 패키지를 추가할 수 있다. |
+| Repository 계층 없음 | `app/repositories/` 존재 | 현재 템플릿은 Service에서 SQLAlchemy 쿼리를 분리해 데이터 접근 책임을 더 명확하게 나눈다. |
+| 동기 `Session` | 비동기 `AsyncSession` | 현재 템플릿은 `asyncmy`, `create_async_engine`, `async_sessionmaker`를 사용하므로 DB 호출에 `await`가 필요하다. |
+
+첨부 자료의 예시는 Service에서 ORM 모델을 직접 생성하고 `commit()`까지 수행한다. 소규모 프로젝트에서는 이 구조도 사용할 수 있지만, 현재 템플릿에는 Repository 디렉터리가 별도로 준비되어 있으므로 다음과 같이 한 단계 더 분리하는 것이 구조의 목적에 잘 맞는다.
+
+```text
+학습 자료: Router → Schema → Service → Model·Database
+현재 템플릿: API → Schema → Service → Repository → Model·Database
+```
+
+또한 학습 자료에서는 `python-dotenv`와 `os.getenv()`를 사용하지만 현재 템플릿은 `pydantic-settings`의 `BaseSettings`를 사용한다. 두 방법 모두 환경변수를 읽는다는 목적은 같지만, `BaseSettings`는 설정값의 타입 선언과 검증을 함께 수행할 수 있다.
+
+이 비교를 통해 디렉터리 이름 자체보다 각 계층이 어떤 책임을 맡고, 의존 방향이 일관되게 유지되는지가 더 중요하다는 것을 확인할 수 있다.
+
 ### 참고자료
 
+- 「Structuring a FastAPI Project: Best Practices」, 제공된 학습 자료
 - [FastAPI 공식 문서 - Bigger Applications: Multiple Files](https://fastapi.tiangolo.com/tutorial/bigger-applications/)
 - [SQLAlchemy 공식 문서 - Declarative Mapping](https://docs.sqlalchemy.org/en/20/orm/declarative_mapping.html)
 - [SQLAlchemy 공식 문서 - Asynchronous I/O](https://docs.sqlalchemy.org/en/20/orm/extensions/asyncio.html)
