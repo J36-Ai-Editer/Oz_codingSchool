@@ -2,10 +2,16 @@ import os
 from pathlib import Path
 
 from fastapi import FastAPI
-from starlette.staticfiles import StaticFiles
 from starlette.responses import FileResponse
+from starlette.staticfiles import StaticFiles
+
+from app.apis import admin_users_router, users_router
+
 
 app = FastAPI()
+
+app.include_router(users_router)
+app.include_router(admin_users_router)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
