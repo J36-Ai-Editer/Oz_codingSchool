@@ -119,7 +119,7 @@ async def update_my_password(
     await user_service.update_password(db, current_user, request)
     return MessageResponse(message="비밀번호가 변경되었습니다.")
 
-
+# 회원 탈퇴 기능
 @router.delete(
     "/me",
     status_code=status.HTTP_204_NO_CONTENT,

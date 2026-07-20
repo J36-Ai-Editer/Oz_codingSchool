@@ -44,9 +44,11 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
 async def get_current_admin(current_user: CurrentUser) -> User:
+    # 토큰 검증·활성 계정 확인(401)은 get_current_user 단계에서 이미 끝났다.
+    # 여기서는 "관리자냐"만 판단한다 → 인증은 됐지만 권한이 부족하면 403.
     if current_user.role != Role.ADMIN:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
+            status_code=status.HTTP_403_FORBIDDEN,  # 인증 O, 권한 X → Forbidden
             detail="관리자 권한이 필요합니다.",
         )
     return current_user

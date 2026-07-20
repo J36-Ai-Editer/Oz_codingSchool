@@ -119,7 +119,7 @@ async def update_password(
     await user_repository.save(db, user)
     await _commit(db)
 
-
+# 회원탈퇴 Delete
 async def deactivate(db: AsyncSession, user: User) -> None:
     user.is_active = False
     await user_repository.save(db, user)
@@ -144,17 +144,20 @@ async def update_role(
     admin: User,
     request: UserRoleUpdateRequest,
 ) -> User:
+    # ① 자기 자신의 권한은 바꿀 수 없다 → 400 (관리자가 실수로 자기 강등하는 것 방지)
     if request.user_id == admin.id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="자신의 권한은 변경할 수 없습니다.",
         )
+    # ② 변경 대상을 먼저 조회한다 → 존재하지 않으면 404 (바꿀 대상 자체가 없음)
     user = await user_repository.get_by_id(db, request.user_id)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="사용자를 찾을 수 없습니다.",
         )
+    # ③ 위 검증을 모두 통과했을 때만 권한을 실제로 변경한다
     user.role = request.new_role
     await user_repository.save(db, user)
     await _commit(db)

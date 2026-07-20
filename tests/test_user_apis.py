@@ -193,6 +193,14 @@ async def test_complete_user_and_admin_flow(client: AsyncClient) -> None:
     )
     assert response.status_code == 400
 
+    # 존재하지 않는 user_id로 권한 변경 시도 → 404
+    response = await client.patch(
+        "/api/v1/admin/users/role",
+        headers=authorization(admin_token),
+        json={"user_id": 999999, "new_role": "STAFF"},
+    )
+    assert response.status_code == 404
+
     response = await client.post(
         "/api/v1/users/logout",
         headers=authorization(user_token),
