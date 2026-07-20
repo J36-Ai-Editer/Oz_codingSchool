@@ -1,33 +1,61 @@
-AI 헬스케어 Web Development
+# AI Health Web Assignment
 
-## 2일차 FastAPI 회원 관리 과제
+## User API
 
-### 설치 및 실행
+4일차 과제의 User API는 SQLAlchemy 비동기 세션, Pydantic 검증, Argon2 비밀번호 해싱, JWT 인증을 사용합니다.
 
-```powershell
-py -3.14 -m venv .venv
-.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-python -m uvicorn app.main:app --reload
+| Method | Endpoint | 기능 |
+| --- | --- | --- |
+| `POST` | `/api/v1/users/signup` | 회원가입 |
+| `POST` | `/api/v1/users/login` | 로그인 |
+| `POST` | `/api/v1/users/refresh` | Access Token 재발급 |
+| `POST` | `/api/v1/users/logout` | 로그아웃 |
+| `GET` | `/api/v1/users/me` | 내 정보 조회 |
+| `PATCH` | `/api/v1/users/me` | 내 정보 수정 |
+| `PATCH` | `/api/v1/users/me/password` | 비밀번호 변경 |
+| `DELETE` | `/api/v1/users/me` | 회원 탈퇴 |
+| `GET` | `/api/v1/admin/users` | 관리자 사용자 목록 조회 |
+| `PATCH` | `/api/v1/admin/users/role` | 관리자 사용자 권한 수정 |
+
+### 환경 설정
+
+`.env.example`을 `.env`로 복사한 뒤 DB 접속 정보와 `JWT_SECRET_KEY`를 환경에 맞게 수정합니다. 실제 비밀키는 저장소에 커밋하지 않습니다.
+
+### 실행 및 Swagger 확인
+
+```bash
+uv sync --group dev
+uv run fastapi dev app/main.py
 ```
 
-서버 실행 후 다음 주소에서 API를 확인할 수 있습니다.
+서버 실행 후 [http://localhost:8000/docs](http://localhost:8000/docs)에서 10개 User API를 확인할 수 있습니다.
 
-- Swagger UI: <http://127.0.0.1:8000/docs>
-- OpenAPI JSON: <http://127.0.0.1:8000/openapi.json>
+### 자동 테스트
 
-### API
+테스트는 실제 MySQL 데이터에 영향을 주지 않도록 격리된 SQLite DB에서 실행됩니다.
 
-| Method | Endpoint | 설명 |
-|---|---|---|
-| `GET` | `/practice_api/users` | 모든 회원 조회 |
-| `GET` | `/practice_api/users/{user_id}` | 특정 회원 조회 |
-| `POST` | `/practice_api/users` | 회원 추가 |
-| `PATCH` | `/practice_api/users/{user_id}` | 회원 정보 일부 수정 |
-| `DELETE` | `/practice_api/users/{user_id}` | 특정 회원 삭제 |
+```bash
+uv run pytest -q
+```
 
-### 테스트
+## Alembic Migration Guide
 
-```powershell
-python -m pytest -q
+이 프로젝트는 데이터베이스 마이그레이션을 위해 Alembic을 사용합니다.
+
+### 1. 마이그레이션 파일 생성 (자동 생성)
+모델(`app/models/`)이 변경된 경우 다음 명령어를 실행하여 마이그레이션 파일을 생성합니다.
+```bash
+uv run alembic revision --autogenerate -m "변경 내용 설명"
+```
+
+### 2. 데이터베이스에 반영
+생성된 마이그레이션을 데이터베이스에 적용하려면 다음 명령어를 실행합니다.
+```bash
+uv run alembic upgrade head
+```
+
+### 3. 이전 상태로 되돌리기 (Rollback)
+마지막 마이그레이션을 취소하려면 다음 명령어를 실행합니다.
+```bash
+uv run alembic downgrade -1
 ```
