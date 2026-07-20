@@ -142,6 +142,7 @@ class UserListQuery(BaseModel):
 
 
 class UserUpdateRequest(BaseModel):
+    # 마이페이지 수정은 요구사항에 따라 부서와 휴대폰 번호만 허용합니다.
     department: Department | None = None
     phone_number: str | None = None
 
@@ -165,6 +166,7 @@ class UserUpdateRequest(BaseModel):
 
 
 class PasswordUpdateRequest(BaseModel):
+    # 비밀번호 변경 시 기존 비밀번호와 새 비밀번호를 함께 입력받습니다.
     current_password: str = Field(min_length=1, max_length=128)
     new_password: Password
 
