@@ -15,6 +15,7 @@ from app.schemas.user import (
     MessageResponse,
     PasswordUpdateRequest,
     TokenResponse,
+    UserMeResponse,
     UserResponse,
     UserSignupRequest,
     UserUpdateRequest,
@@ -92,8 +93,8 @@ async def logout(response: Response, current_user: CurrentUser) -> None:
     response.delete_cookie(key=REFRESH_COOKIE_NAME, path="/api/v1/users")
 
 
-@router.get("/me", response_model=UserResponse, summary="내 정보 조회")
-async def get_me(current_user: CurrentUser) -> UserResponse:
+@router.get("/me", response_model=UserMeResponse, summary="내 정보 조회")
+async def get_me(current_user: CurrentUser) -> UserMeResponse:
     return current_user
 
 

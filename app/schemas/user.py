@@ -115,6 +115,15 @@ class UserResponse(BaseModel):
     is_active: bool
     created_at: datetime
 
+class UserMeResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    name: str
+    email: EmailStr
+    department: Department
+    gender: Gender
+    phone_number: str
+    role: Role
 
 class TokenResponse(BaseModel):
     access_token: str
