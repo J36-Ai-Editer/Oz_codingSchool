@@ -7,6 +7,7 @@ from sqlalchemy.pool import StaticPool
 
 from app.core.db.databases import async_get_db
 from app.main import app
+from app.models.patient import Patient
 from app.models.user import User
 
 
@@ -34,8 +35,10 @@ app.dependency_overrides[async_get_db] = override_get_db
 async def reset_user_table() -> AsyncGenerator[None, None]:
     async with test_engine.begin() as connection:
         await connection.run_sync(User.__table__.create, checkfirst=True)
+        await connection.run_sync(Patient.__table__.create, checkfirst=True)
     yield
     async with test_engine.begin() as connection:
+        await connection.run_sync(Patient.__table__.drop, checkfirst=True)
         await connection.run_sync(User.__table__.drop, checkfirst=True)
 
 
