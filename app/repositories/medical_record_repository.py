@@ -23,6 +23,18 @@ async def get_by_id(db: AsyncSession, record_id: int) -> MedicalRecord | None:
     return await db.scalar(statement)
 
 
+async def list_by_patient(
+    db: AsyncSession,
+    patient_id: int,
+) -> list[MedicalRecord]:
+    result = await db.scalars(
+        select(MedicalRecord)
+        .where(MedicalRecord.patient_id == patient_id)
+        .order_by(MedicalRecord.id)
+    )
+    return list(result.all())
+
+
 async def get_by_chart_number(
     db: AsyncSession,
     chart_number: str,

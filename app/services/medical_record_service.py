@@ -13,6 +13,15 @@ from app.models.medical_record import MedicalRecord
 from app.models.user import User
 from app.models.xray_image import XrayImage
 from app.repositories import medical_record_repository, patient_repository
+from app.schemas.medical_record import MedicalRecordListItem
+
+SYMPTOMS_PREVIEW_LEN = 100
+
+
+def _truncate_symptoms(symptoms: str) -> str:
+    if len(symptoms) > SYMPTOMS_PREVIEW_LEN:
+        return symptoms[:SYMPTOMS_PREVIEW_LEN] + "…"
+    return symptoms
 
 
 async def _commit(db: AsyncSession) -> None:
@@ -104,3 +113,25 @@ async def get_medical_record(
             detail="진료기록을 찾을 수 없습니다.",
         )
     return record
+
+
+async def list_records(
+    db: AsyncSession,
+    patient_id: int,
+) -> list[MedicalRecordListItem]:
+    # 환자가 없거나 삭제됐으면 404 (기록 0건인 빈 목록과 구분한다).
+    if await patient_repository.get_active_by_id(db, patient_id) is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="환자를 찾을 수 없습니다.",
+        )
+    records = await medical_record_repository.list_by_patient(db, patient_id)
+    return [
+        MedicalRecordListItem(
+            id=record.id,
+            chart_number=record.chart_number,
+            symptoms=_truncate_symptoms(record.symptoms),
+            created_at=record.created_at,
+        )
+        for record in records
+    ]
