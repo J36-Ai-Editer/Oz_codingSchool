@@ -6,14 +6,14 @@ from sqlalchemy import BigInteger, Enum, SmallInteger, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db.databases import Base
-from app.core.db.models import TimestampMixin
+from app.core.db.models import SoftDeleteMixin, TimestampMixin
 from app.models.enums import Gender
 
 if TYPE_CHECKING:
     from app.models.medical_record import MedicalRecord
 
 
-class Patient(TimestampMixin, Base):
+class Patient(TimestampMixin, SoftDeleteMixin, Base):
     __tablename__ = "patients"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
