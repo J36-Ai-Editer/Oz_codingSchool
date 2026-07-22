@@ -1,3 +1,9 @@
+<<<<<<< HEAD
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+=======
 __pycache__/
 *.py[cod]
 .pytest_cache/
@@ -6,3 +12,4 @@ __pycache__/
 **/.env
 .tmp/
 .worktrees/
+>>>>>>> origin/main
