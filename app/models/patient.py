@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from sqlalchemy import BigInteger, Enum, SmallInteger, String
+from sqlalchemy import BigInteger, Enum, Integer, SmallInteger, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db.databases import Base
@@ -16,7 +16,11 @@ if TYPE_CHECKING:
 class Patient(TimestampMixin, SoftDeleteMixin, Base):
     __tablename__ = "patients"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(
+        BigInteger().with_variant(Integer, "sqlite"),
+        primary_key=True,
+        autoincrement=True,
+    )
     name: Mapped[str] = mapped_column(String(30), nullable=False)
     age: Mapped[int] = mapped_column(SmallInteger, nullable=False)
     gender: Mapped[Gender | None] = mapped_column(

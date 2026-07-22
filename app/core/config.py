@@ -2,6 +2,7 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
+    DATABASE_URL: str | None = None
     DB_USER: str = "root"
     DB_PASSWORD: str = "password1234"
     DB_HOST: str = "localhost"
