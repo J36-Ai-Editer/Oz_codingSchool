@@ -7,7 +7,10 @@ from starlette.concurrency import run_in_threadpool
 
 from app.models.ai_analysis_result import AIAnalysisResult
 from app.repositories import ai_analysis_repository
-from worker.model import InvalidImageError, predict_pneumonia
+
+# 주의: worker.model 은 torch 를 무겁게 import(수백 MB) 하므로 모듈 최상단에서
+# import 하지 않는다. 실제 예측(predict_record) 시점에 지연 import 하여
+# 앱 부팅 메모리를 낮춘다(512MB 무료 호스팅 대응).
 
 
 AI_MODEL_NAME = "SimpleCNN-v1"
@@ -57,6 +60,9 @@ async def predict_record(
 
     latest_xray = max(record.xray_images, key=lambda image: image.id)
     image_path = _resolve_media_path(latest_xray.image_url)
+    # torch 지연 import: 첫 예측 요청 때만 모델/torch 를 메모리에 올린다.
+    from worker.model import InvalidImageError, predict_pneumonia
+
     try:
         prediction = await run_in_threadpool(predict_pneumonia, image_path)
     except InvalidImageError as exc:
