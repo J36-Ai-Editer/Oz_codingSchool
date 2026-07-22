@@ -10,6 +10,8 @@ services:
       # 컨테이너 내부에서는 localhost 가 아니라 mysql 서비스명으로 접속한다.
       DB_HOST: mysql
       DB_PORT: "3306"
+      # 로컬 개발에서만 자동 리로드 (프로덕션/호스팅에서는 미설정 → 리로드 off)
+      UVICORN_RELOAD: "1"
     ports:
       - "8000:8000"
     volumes:

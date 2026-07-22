@@ -36,4 +36,10 @@ echo "[entrypoint] Seeding test data (idempotent) ..."
 python -m app.seed || echo "[entrypoint] seed 건너뜀/실패 (서버는 계속 기동)"
 
 echo "[entrypoint] Starting API server (SimpleCNN loads on import) ..."
-exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+# 호스팅(Koyeb 등)은 PORT 를 주입한다. 로컬 개발에선 UVICORN_RELOAD=1 로 자동 리로드.
+SERVE_PORT="${PORT:-8000}"
+if [ -n "${UVICORN_RELOAD:-}" ]; then
+    exec uvicorn app.main:app --host 0.0.0.0 --port "${SERVE_PORT}" --reload
+else
+    exec uvicorn app.main:app --host 0.0.0.0 --port "${SERVE_PORT}"
+fi
