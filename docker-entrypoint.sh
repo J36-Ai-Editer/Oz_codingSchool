@@ -3,7 +3,8 @@
 # 컨테이너 시작 시:
 #   1) MySQL 이 접속 가능해질 때까지 대기
 #   2) Alembic 마이그레이션으로 스키마 생성/최신화
-#   3) uvicorn 으로 FastAPI(+SimpleCNN) 기동
+#   3) 테스트 시드 데이터 생성 (멱등 - 이미 있으면 건너뜀)
+#   4) uvicorn 으로 FastAPI(+SimpleCNN) 기동
 # ---------------------------------------------------------------------------
 set -e
 
@@ -30,6 +31,9 @@ PY
 
 echo "[entrypoint] Running Alembic migrations ..."
 alembic upgrade head
+
+echo "[entrypoint] Seeding test data (idempotent) ..."
+python -m app.seed || echo "[entrypoint] seed 건너뜀/실패 (서버는 계속 기동)"
 
 echo "[entrypoint] Starting API server (SimpleCNN loads on import) ..."
 exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
