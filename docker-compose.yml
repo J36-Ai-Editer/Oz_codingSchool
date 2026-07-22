@@ -2,7 +2,7 @@ services:
   fastapi:
     build:
       context: .
-      dockerfile: app/Dockerfile
+      dockerfile: Dockerfile
     # DB 자격증명(JWT 등)은 .env 에서, 컨테이너 네트워크용 접속 정보는 아래 environment 로 덮어쓴다.
     env_file:
       - .env
