@@ -108,8 +108,57 @@ Authorization: Bearer <access_token>
 | Repository | `app/repositories/ai_analysis_repository.py` |
 | AI Worker | `worker/model.py` |
 
-## 8. 현재 제한사항
+## 8. 테스트 및 성능 검증
+
+### 8.1 자동화 테스트
+
+| 구분 | 검증 내용 | 기대 결과 |
+| --- | --- | --- |
+| 모델 전처리 | 입력 이미지의 채널·크기 변환 | `[1, 1, 128, 128]` 텐서 |
+| 모델 예측 | 클래스, 확률 범위와 합계 | `NORMAL` 또는 `PNEUMONIA`, 확률 합 약 1 |
+| 잘못된 이미지 | 이미지가 아닌 데이터 입력 | `InvalidImageError` |
+| 모델 재사용 | 여러 예측 사이 모델 객체 비교 | 전역 `MODEL` 객체 재사용 |
+| 예측 API | 의료진의 예측 실행 | `201 Created` |
+| 결과 조회 API | 승인 사용자의 결과 목록 조회 | `200 OK` |
+| 인증·권한 | 미인증 및 `PENDING` 사용자 요청 | 각각 `401`, `403` |
+| 대상 없음 | 존재하지 않는 진료기록 예측 | `404 Not Found` |
+
+테스트 코드는 `tests/test_worker_model.py`와
+`tests/test_ai_prediction_apis.py`에 작성했다.
+
+### 8.2 추론 성능 측정 방법
+
+- 모델 로딩과 최초 장치 초기화의 영향을 줄이기 위해 3회 워밍업 후 측정한다.
+- 동일한 `128x128` 흑백 입력으로 20회 추론한다.
+- 평균, p95, 최댓값을 기록한다.
+- 과제의 3초 이내 응답 목표를 고려해 p95 추론시간 3초 미만을 합격 기준으로 삼는다.
+
+실행 명령어:
+
+```bash
+uv run pytest tests/test_worker_model.py tests/test_ai_prediction_apis.py -v -s
+```
+
+### 8.3 검증 결과
+
+2026년 7월 22일 Windows, Python 3.14.4, CPU 실행 환경에서 측정했다.
+
+| 항목 | 결과 |
+| --- | --- |
+| 자동화 테스트 | `10 passed` |
+| 평균 추론시간 | `0.0022초` |
+| p95 추론시간 | `0.0034초` |
+| 최대 추론시간 | `0.0041초` |
+| p95 3초 미만 | 충족 |
+
+측정값은 실행 장비와 부하 상태에 따라 달라질 수 있다. 이 결과는 코드 동작과
+단일 이미지 추론 지연시간 검증이며, HTTP·DB·파일 I/O가 포함된 전체 부하 테스트는
+아니다.
+
+## 9. 현재 제한사항
 
 - 제공된 SimpleCNN은 Grad-CAM heatmap을 생성하지 않으므로 `heatmap_url`은 빈 문자열로 저장한다.
 - 클래스 순서와 전처리는 팀이 확인한 모델 설정인 `NORMAL=0`, `PNEUMONIA=1`, 흑백 `128x128`을 사용한다.
+- 모델의 Accuracy, Precision, Recall, F1-score는 정답 라벨이 포함된 별도 평가 데이터셋이 필요하다.
+- 폐렴 탐지에서는 False Negative를 줄이기 위해 향후 `PNEUMONIA Recall`을 주요 지표로 검증한다.
 - 예측 결과는 의료진의 진단을 보조하며 최종 진단을 대체하지 않는다.
