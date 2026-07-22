@@ -32,6 +32,10 @@ click==8.4.2
     # via
     #   rich-toolkit
     #   uvicorn
+colorama==0.4.6
+    # via
+    #   click
+    #   typer
 cryptography==49.0.0
     # via ai-health-web-assignment (pyproject.toml)
 detect-installer==0.1.0
@@ -52,6 +56,10 @@ fastar==0.11.0
     # via
     #   fastapi
     #   fastapi-cloud-cli
+filelock==3.32.0
+    # via torch
+fsspec==2026.6.0
+    # via torch
 greenlet==3.5.3
     # via sqlalchemy
 h11==0.16.0
@@ -72,7 +80,9 @@ idna==3.18
     #   email-validator
     #   httpx
 jinja2==3.1.6
-    # via fastapi
+    # via
+    #   fastapi
+    #   torch
 mako==1.3.12
     # via alembic
 markdown-it-py==4.2.0
@@ -83,6 +93,16 @@ markupsafe==3.0.3
     #   mako
 mdurl==0.1.2
     # via markdown-it-py
+mpmath==1.3.0
+    # via sympy
+networkx==3.6.1
+    # via torch
+numpy==2.5.1
+    # via torchvision
+pillow==12.3.0
+    # via
+    #   ai-health-web-assignment (pyproject.toml)
+    #   torchvision
 pwdlib==0.3.0
     # via ai-health-web-assignment (pyproject.toml)
 pycparser==3.0
@@ -125,6 +145,8 @@ rignore==0.8.0
     # via fastapi-cloud-cli
 sentry-sdk==2.66.0
     # via fastapi-cloud-cli
+setuptools==83.0.0
+    # via torch
 shellingham==1.5.4
     # via typer
 sqlalchemy==2.0.51
@@ -133,6 +155,14 @@ sqlalchemy==2.0.51
     #   alembic
 starlette==1.3.1
     # via fastapi
+sympy==1.14.0
+    # via torch
+torch==2.13.0
+    # via
+    #   ai-health-web-assignment (pyproject.toml)
+    #   torchvision
+torchvision==0.28.0
+    # via ai-health-web-assignment (pyproject.toml)
 typer==0.27.0
     # via
     #   fastapi-cli
@@ -146,6 +176,7 @@ typing-extensions==4.16.0
     #   pydantic-extra-types
     #   rich-toolkit
     #   sqlalchemy
+    #   torch
     #   typing-inspection
 typing-inspection==0.4.2
     # via
@@ -161,8 +192,6 @@ uvicorn==0.51.0
     #   fastapi
     #   fastapi-cli
     #   fastapi-cloud-cli
-uvloop==0.22.1
-    # via uvicorn
 watchfiles==1.2.0
     # via uvicorn
 websockets==16.1.1
