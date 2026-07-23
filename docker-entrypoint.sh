@@ -8,6 +8,14 @@
 # ---------------------------------------------------------------------------
 set -e
 
+# 로컬 개발(UVICORN_RELOAD=1)에서 .env 가 없으면 .env.example 로 만들어 준다.
+# /app 은 호스트 소스가 마운트된 경로이므로 생성된 파일이 호스트에도 그대로 남는다.
+# (배포 환경에서는 플랫폼 환경변수를 쓰므로 생성하지 않는다)
+if [ -n "${UVICORN_RELOAD:-}" ] && [ ! -f /app/.env ] && [ -f /app/.env.example ]; then
+    cp /app/.env.example /app/.env
+    echo "[entrypoint] .env 가 없어 .env.example 을 복사해 생성했습니다."
+fi
+
 DB_HOST="${DB_HOST:-mysql}"
 DB_PORT="${DB_PORT:-3306}"
 
