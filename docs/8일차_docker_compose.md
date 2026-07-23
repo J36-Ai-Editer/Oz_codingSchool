@@ -47,6 +47,14 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload \
 
 ## 3. 실행 방법
 
+> **요구 버전: Docker Compose v2.24.0 이상** (Docker Desktop 4.27 이상에 포함)
+> `env_file` 의 `required: false` 문법이 v2.24.0 에서 추가됐다. 그 이전 버전에서는
+> `env_file` 파싱 단계에서 오류가 나므로, 아래로 버전을 먼저 확인한다.
+>
+> ```bash
+> docker compose version
+> ```
+
 ```bash
 # 이미지 빌드 + 컨테이너 실행
 docker compose up -d --build
@@ -69,22 +77,40 @@ docker compose down
 
 ## 4. 실행 화면
 
-### 4.1 이미지 빌드 및 컨테이너 실행 (`docker compose up -d --build`)
+아래는 모두 실제 터미널에서 명령을 실행한 화면 캡처다.
 
-![docker compose up](./images/day8_docker_compose_up.png)
+### 4.1 이미지 빌드 및 컨테이너 실행 — `docker compose up -d --build`
 
-### 4.2 컨테이너 상태 / 헬스체크 / 로그
+명령 실행 직후 (빌드 시작)
 
-![docker compose ps](./images/day8_docker_compose_ps.png)
+![docker compose up 실행](./images/day8_01_compose_up_start.png)
 
-### 4.3 신규 clone 후 무설정 실행 검증
+빌드 완료 및 컨테이너 기동 (`[+] up 4/4`)
 
-저장소를 새로 clone 해 `.env` 가 없는 상태에서 `docker compose up -d --build` 만 실행한 결과다.
-`.env` 자동 생성 → Alembic 마이그레이션 → 시드 데이터 생성 → 로그인 API 200 까지 확인했다.
+![docker compose up 완료](./images/day8_02_compose_up_done.png)
 
-![신규 clone 무설정 실행](./images/day8_fresh_clone_zeroconfig.png)
+### 4.2 컨테이너 상태 — `docker compose ps`
 
-> 위 이미지는 실제 실행한 `docker compose` 출력 로그를 터미널 형태로 렌더링한 것이다.
+`fastapi`, `mysql` 이 모두 `healthy` 이고 포트가 정상 매핑된 것을 확인할 수 있다.
+
+![docker compose ps](./images/day8_03_compose_ps.png)
+
+### 4.3 애플리케이션 로그 — `docker compose logs --tail=50 fastapi`
+
+DB 대기 → Alembic 마이그레이션 → 시드 → `uvicorn --reload` 기동(감시 경로 `/app/app`, `/app/worker`)
+순서가 그대로 찍히고, 헬스체크 요청이 200 으로 응답하는 것을 볼 수 있다.
+
+![docker compose logs](./images/day8_04_compose_logs.png)
+
+### 4.4 헬스체크 — `curl http://127.0.0.1:8000/healthcheck`
+
+![curl healthcheck](./images/day8_05_curl_healthcheck.png)
+
+### 4.5 신규 clone 후 무설정 실행 검증
+
+별도 디렉터리에 저장소를 새로 clone 해 `.env` 가 없는 상태에서 `docker compose up -d --build` 만
+실행했고, `.env` 자동 생성 → Alembic 마이그레이션 2건 → 시드 데이터 생성 → 로그인 API 200 까지
+정상 동작하는 것을 확인했다(아래 검증 결과 표 참고).
 
 ## 5. 검증 결과
 

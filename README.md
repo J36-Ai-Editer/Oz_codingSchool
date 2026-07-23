@@ -5,6 +5,9 @@
 Docker Desktop 만 설치돼 있으면 아래 두 줄로 API·MySQL·Adminer 가 함께 뜬다.
 `.env` 는 없으면 `.env.example` 을 복사해 자동 생성되므로 별도 준비가 필요 없다.
 
+> **최소 요구 버전: Docker Compose v2.24.0 이상** (Docker Desktop 4.27 이상)
+> — `env_file` 의 `required: false` 문법을 사용한다. `docker compose version` 으로 확인.
+
 ```bash
 docker compose up -d --build
 docker compose ps          # fastapi, mysql 이 healthy 면 정상

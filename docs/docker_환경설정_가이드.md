@@ -5,6 +5,15 @@
 
 ## 0. 한눈에 보기
 
+> **최소 요구 버전: Docker Compose v2.24.0 이상** (Docker Desktop 4.27 이상에 포함)
+> 이 저장소의 `docker-compose.yml` 은 `.env` 없이도 실행되도록 `env_file` 의 `required: false`
+> 문법을 사용하는데, 해당 문법이 Compose v2.24.0 에서 추가됐다. 그 이전 버전에서는
+> `env_file` 파싱 오류가 발생하므로 Docker Desktop 을 업데이트해야 한다.
+>
+> ```bash
+> docker compose version    # 예: Docker Compose version v2.24.0 이상이면 OK
+> ```
+
 ```bash
 # 1) Docker Desktop 설치 (OS별 1장·2장 참고)
 # 2) 저장소 클론
@@ -30,6 +39,7 @@ docker compose up -d --build
 | CPU | 가상화 지원 + BIOS/UEFI 에서 가상화 활성화 |
 | 백엔드 | WSL 2 (Docker Desktop 기본값) |
 | 메모리 | 8GB 이상 권장 (torch 추론 포함) |
+| Docker Desktop | 4.27 이상 (Compose v2.24.0 이상 포함) |
 
 작업 관리자 → 성능 → CPU 에서 **가상화: 사용** 인지 먼저 확인한다. `사용 안 함` 이면 BIOS 에서
 Intel VT-x / AMD-V 를 켜야 한다.
@@ -108,6 +118,7 @@ git checkout -- docker-entrypoint.sh
 | OS | macOS 13 (Ventura) 이상 |
 | CPU | Apple Silicon(M1~) 또는 Intel |
 | 메모리 | 8GB 이상 권장 (Docker 에 4GB 이상 할당) |
+| Docker Desktop | 4.27 이상 (Compose v2.24.0 이상 포함) |
 
 ### 2.2 Docker Desktop 설치
 
