@@ -1,27 +1,48 @@
+# ---------------------------------------------------------------------------
+# 로컬 개발용 Docker Compose
+#   fastapi : 루트의 Dockerfile 로 빌드한 이미지 (FastAPI + SimpleCNN 추론)
+#   mysql   : 애플리케이션 DB
+#   adminer : DB 확인용 웹 UI (선택)
+#
+# 실행:  docker compose up -d --build
+# 중지:  docker compose down          (데이터까지 지우려면 down -v)
+#
+# .env 없이도 아래 기본값으로 그대로 동작한다(clone → docker compose up 만으로 실행).
+# .env 를 두면 그 값이 우선 적용된다. 기본값은 로컬 개발 전용이며 배포에는 쓰지 않는다.
+# ---------------------------------------------------------------------------
 services:
   fastapi:
     build:
       context: .
       dockerfile: Dockerfile
-    # DB 자격증명(JWT 등)은 .env 에서, 컨테이너 네트워크용 접속 정보는 아래 environment 로 덮어쓴다.
+    container_name: ai_health_api
+    # 비밀값(DB 자격증명·JWT 등)은 .env 에서 읽되, 파일이 없어도 실행되도록 required: false.
     env_file:
-      - .env
+      - path: .env
+        required: false
     environment:
       # 컨테이너 내부에서는 localhost 가 아니라 mysql 서비스명으로 접속한다.
       DB_HOST: mysql
       DB_PORT: "3306"
+      # mysql 서비스와 동일한 계정/DB 를 사용해야 하므로 같은 기본값을 공유한다.
+      DB_USER: ${DB_USER:-ai_health_user}
+      DB_PASSWORD: ${DB_PASSWORD:-ai_health_password}
+      DB_NAME: ${DB_NAME:-ai_health}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-local-dev-only-change-in-production}
       # 로컬 개발에서만 자동 리로드 (프로덕션/호스팅에서는 미설정 → 리로드 off)
       UVICORN_RELOAD: "1"
+      # Windows/WSL 호스트의 바인드 마운트는 inotify 이벤트가 전달되지 않으므로
+      # 폴링 방식으로 파일 변경을 감지해야 --reload 가 실제로 동작한다.
+      WATCHFILES_FORCE_POLLING: "true"
     ports:
       - "8000:8000"
     volumes:
-      # 개발 편의를 위한 소스 마운트 (uvicorn --reload 반영). .venv(/code/.venv)는 보존된다.
-      - ./app:/code/app
-      - ./worker:/code/worker
-      - ./alembic:/code/alembic
-      - ./static:/code/static
+      # 로컬 소스 전체를 컨테이너의 /app 에 마운트 → 코드 수정이 --reload 로 즉시 반영된다.
+      - .:/app
+      # 이미지 안에서 uv 로 만든 가상환경은 호스트 .venv 에 가려지면 안 되므로 보존한다.
+      - /app/.venv
       # 업로드된 X-ray 이미지 영속화 (추론 시 이 경로에서 파일을 읽는다)
-      - media_volume:/code/media
+      - media_volume:/app/media
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/healthcheck || exit 1"]
       interval: 10s
@@ -31,31 +52,37 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+    restart: unless-stopped
 
   mysql:
     image: mysql:8.0
+    container_name: ai_health_mysql
     volumes:
       - mysql_volume:/var/lib/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-ai_health_root}
+      MYSQL_DATABASE: ${DB_NAME:-ai_health}
+      MYSQL_USER: ${DB_USER:-ai_health_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-ai_health_password}
     ports:
-      - "${DB_PORT}:3306"
+      # 호스트 포트만 노출용 (컨테이너 간 통신은 항상 3306 을 쓴다)
+      - "${DB_PORT:-3306}:3306"
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_ROOT_PASSWORD}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_ROOT_PASSWORD:-ai_health_root}"]
       interval: 5s
       timeout: 20s
       retries: 10
+    restart: unless-stopped
 
   adminer:
     image: adminer:5
+    container_name: ai_health_adminer
     ports:
       - "8080:8080"
     depends_on:
       mysql:
         condition: service_healthy
+    restart: unless-stopped
 
 
 volumes:

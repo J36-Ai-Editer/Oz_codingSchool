@@ -39,7 +39,10 @@ echo "[entrypoint] Starting API server (SimpleCNN loads on import) ..."
 # 호스팅(Koyeb 등)은 PORT 를 주입한다. 로컬 개발에선 UVICORN_RELOAD=1 로 자동 리로드.
 SERVE_PORT="${PORT:-8000}"
 if [ -n "${UVICORN_RELOAD:-}" ]; then
-    exec uvicorn app.main:app --host 0.0.0.0 --port "${SERVE_PORT}" --reload
+    # 감시 대상을 소스 디렉터리로 한정한다.
+    # (/app 전체를 감시하면 .venv 의 수만 개 파일까지 폴링해 CPU 를 낭비한다)
+    exec uvicorn app.main:app --host 0.0.0.0 --port "${SERVE_PORT}" \
+        --reload --reload-dir /app/app --reload-dir /app/worker
 else
     exec uvicorn app.main:app --host 0.0.0.0 --port "${SERVE_PORT}"
 fi

@@ -12,17 +12,17 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONPATH=/code \
+    PYTHONPATH=/app \
     UV_LINK_MODE=copy \
     UV_COMPILE_BYTECODE=1 \
-    PATH="/code/.venv/bin:$PATH"
+    PATH="/app/.venv/bin:$PATH"
 
 # 헬스체크(curl) 및 빌드에 필요한 최소 시스템 패키지
 RUN apt-get update \
     && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /code
+WORKDIR /app
 
 # 1) 의존성만 먼저 설치해 레이어 캐시를 활용한다 (소스 변경 시 재설치 방지)
 COPY pyproject.toml uv.lock ./
@@ -33,8 +33,8 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 COPY . .
 
 # 엔트리포인트: DB 대기 → 마이그레이션 → uvicorn
-RUN chmod +x /code/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
 
 EXPOSE 8000
 
-ENTRYPOINT ["/code/docker-entrypoint.sh"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
