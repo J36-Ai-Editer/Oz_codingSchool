@@ -149,8 +149,6 @@ users
 xray_images
 ```
 
-![Adminer에서 확인한 ai_health 데이터베이스 스키마](./images/day3_db_schema_adminer.jpg)
-
 위 화면에서 Alembic이 관리하는 `alembic_version`과 ERD를 기반으로 작성한 다섯 업무 테이블이 모두 생성된 것을 확인할 수 있다.
 
 ## 9. 검증 체크리스트
