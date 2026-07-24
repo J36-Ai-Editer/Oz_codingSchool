@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 
 from sqlalchemy import select
 
@@ -18,9 +19,11 @@ from app.models.patient import Patient
 from app.models.user import User
 
 # --- 시드 정의 (테스트용) ---------------------------------------------------
+# 공개 배포 시에는 SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD 환경변수로
+# 강한 자격증명을 지정할 수 있다 (미지정 시 로컬 테스트용 기본값).
 ADMIN = {
-    "email": "admin@example.com",
-    "password": "Passw0rd!!",
+    "email": os.getenv("SEED_ADMIN_EMAIL", "admin@example.com"),
+    "password": os.getenv("SEED_ADMIN_PASSWORD", "Passw0rd!!"),
     "name": "테스트관리자",
     "phone_number": "01000000000",
     "gender": Gender.M,

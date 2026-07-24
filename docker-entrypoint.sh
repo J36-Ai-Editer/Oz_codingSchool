@@ -8,6 +8,14 @@
 # ---------------------------------------------------------------------------
 set -e
 
+# 로컬 개발(UVICORN_RELOAD=1)에서 .env 가 없으면 .env.example 로 만들어 준다.
+# /app 은 호스트 소스가 마운트된 경로이므로 생성된 파일이 호스트에도 그대로 남는다.
+# (배포 환경에서는 플랫폼 환경변수를 쓰므로 생성하지 않는다)
+if [ -n "${UVICORN_RELOAD:-}" ] && [ ! -f /app/.env ] && [ -f /app/.env.example ]; then
+    cp /app/.env.example /app/.env
+    echo "[entrypoint] .env 가 없어 .env.example 을 복사해 생성했습니다."
+fi
+
 DB_HOST="${DB_HOST:-mysql}"
 DB_PORT="${DB_PORT:-3306}"
 
@@ -36,4 +44,13 @@ echo "[entrypoint] Seeding test data (idempotent) ..."
 python -m app.seed || echo "[entrypoint] seed 건너뜀/실패 (서버는 계속 기동)"
 
 echo "[entrypoint] Starting API server (SimpleCNN loads on import) ..."
-exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+# 호스팅(Koyeb 등)은 PORT 를 주입한다. 로컬 개발에선 UVICORN_RELOAD=1 로 자동 리로드.
+SERVE_PORT="${PORT:-8000}"
+if [ -n "${UVICORN_RELOAD:-}" ]; then
+    # 감시 대상을 소스 디렉터리로 한정한다.
+    # (/app 전체를 감시하면 .venv 의 수만 개 파일까지 폴링해 CPU 를 낭비한다)
+    exec uvicorn app.main:app --host 0.0.0.0 --port "${SERVE_PORT}" \
+        --reload --reload-dir /app/app --reload-dir /app/worker
+else
+    exec uvicorn app.main:app --host 0.0.0.0 --port "${SERVE_PORT}"
+fi
