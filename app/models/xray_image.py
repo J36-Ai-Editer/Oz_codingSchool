@@ -16,9 +16,15 @@ if TYPE_CHECKING:
 class XrayImage(Base):
     __tablename__ = "xray_images"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(
+        BigInteger().with_variant(Integer, "sqlite"),
+        primary_key=True,
+        autoincrement=True,
+    )
     record_id: Mapped[int] = mapped_column(
-        BigInteger, ForeignKey("medical_records.id", ondelete="CASCADE"), nullable=False
+        BigInteger().with_variant(Integer, "sqlite"),
+        ForeignKey("medical_records.id", ondelete="CASCADE"),
+        nullable=False,
     )
     uploader_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True

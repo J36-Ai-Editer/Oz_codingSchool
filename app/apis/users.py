@@ -15,6 +15,7 @@ from app.schemas.user import (
     MessageResponse,
     PasswordUpdateRequest,
     TokenResponse,
+    UserMeResponse,
     UserResponse,
     UserSignupRequest,
     UserUpdateRequest,
@@ -92,8 +93,8 @@ async def logout(response: Response, current_user: CurrentUser) -> None:
     response.delete_cookie(key=REFRESH_COOKIE_NAME, path="/api/v1/users")
 
 
-@router.get("/me", response_model=UserResponse, summary="내 정보 조회")
-async def get_me(current_user: CurrentUser) -> UserResponse:
+@router.get("/me", response_model=UserMeResponse, summary="내 정보 조회")
+async def get_me(current_user: CurrentUser) -> UserMeResponse:
     return current_user
 
 
@@ -103,6 +104,7 @@ async def update_me(
     current_user: CurrentUser,
     db: DbSession,
 ) -> UserResponse:
+    # 임경수 담당 API: 로그인한 사용자의 부서와 휴대폰 번호를 부분 수정합니다.
     return await user_service.update_profile(db, current_user, request)
 
 
@@ -116,6 +118,7 @@ async def update_my_password(
     current_user: CurrentUser,
     db: DbSession,
 ) -> MessageResponse:
+    # 임경수 담당 API: 기존 비밀번호 확인 후 새 비밀번호로 변경합니다.
     await user_service.update_password(db, current_user, request)
     return MessageResponse(message="비밀번호가 변경되었습니다.")
 

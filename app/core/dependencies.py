@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db.databases import async_get_db
 from app.core.security import decode_token
-from app.models.enums import Role
+from app.models.enums import Department, Role
 from app.models.user import User
 from app.repositories import user_repository
 
@@ -55,3 +55,34 @@ async def get_current_admin(current_user: CurrentUser) -> User:
 
 
 CurrentAdmin = Annotated[User, Depends(get_current_admin)]
+
+
+async def get_current_approved_user(current_user: CurrentUser) -> User:
+    if current_user.role not in {Role.STAFF, Role.ADMIN}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="접근 권한이 없습니다.",
+        )
+    return current_user
+
+
+CurrentApprovedUser = Annotated[User, Depends(get_current_approved_user)]
+
+
+async def get_current_medical_staff(
+    current_user: CurrentApprovedUser,
+) -> User:
+    is_admin = current_user.role == Role.ADMIN
+    is_medical_staff = (
+        current_user.department == Department.MEDICAL
+        and current_user.role in {Role.STAFF, Role.ADMIN}
+    )
+    if not is_admin and not is_medical_staff:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="접근 권한이 없습니다.",
+        )
+    return current_user
+
+
+CurrentMedicalStaff = Annotated[User, Depends(get_current_medical_staff)]

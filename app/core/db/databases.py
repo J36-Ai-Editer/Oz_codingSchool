@@ -6,10 +6,20 @@ from app.core.config import settings
 
 DATABASE_PREFIX = "mysql+asyncmy://"
 DATABASE_URI = f"{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
-DATABASE_URL = f"{DATABASE_PREFIX}{DATABASE_URI}"
+DATABASE_URL = settings.DATABASE_URL or f"{DATABASE_PREFIX}{DATABASE_URI}"
+
+# 외부 관리형 MySQL(TiDB Serverless 등)은 TLS 연결을 요구한다.
+# DB_SSL=true 이면 시스템 신뢰 CA 기반 SSL 컨텍스트로 접속한다.
+_connect_args: dict = {}
+if settings.DB_SSL:
+    import ssl
+
+    _connect_args["ssl"] = ssl.create_default_context()
 
 # 비동기 엔진 생성
-async_engine = create_async_engine(DATABASE_URL, echo=False, future=True)
+async_engine = create_async_engine(
+    DATABASE_URL, echo=False, future=True, connect_args=_connect_args
+)
 # 비동기 세션 팩토리 생성
 AsyncSessionLocal = async_sessionmaker(bind=async_engine, autoflush=False, expire_on_commit=False)
 # 모델 베이스 생성

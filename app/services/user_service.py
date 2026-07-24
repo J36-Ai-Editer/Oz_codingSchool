@@ -79,6 +79,7 @@ async def update_profile(
     user: User,
     request: UserUpdateRequest,
 ) -> User:
+    # Partial Update이므로 입력된 필드만 추려서 현재 사용자 정보에 반영합니다.
     updates = request.model_dump(exclude_unset=True)
     if not updates:
         raise HTTPException(
@@ -105,6 +106,7 @@ async def update_password(
     user: User,
     request: PasswordUpdateRequest,
 ) -> None:
+    # 기존 비밀번호 검증을 통과한 경우에만 새 비밀번호를 해싱하여 저장합니다.
     if not verify_password(request.current_password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
