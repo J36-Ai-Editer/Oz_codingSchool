@@ -1,0 +1,48 @@
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Test / type-check / lint cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments and package caches
+.venv/
+venv/
+env/
+.uv-cache/
+.pip-cache/
+
+# Docker-related files
+Dockerfile
+Dockerfile.*
+docker-compose.yml
+docker-compose.*.yml
+.dockerignore
+
+# Documentation
+docs/
+README.md
+
+# IDE / editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git metadata
+.git/
+.gitignore

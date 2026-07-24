@@ -1,11 +1,19 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
 .venv/
+venv/
+env/
 .env
 **/.env
+.env.*
+!.env.example
 .tmp/
 .worktrees/
+.DS_Store
+Thumbs.db
 
 # 업로드된 사용자 파일(X-ray 등) — 민감 데이터라 커밋 금지.
 # 실제 저장은 Docker 볼륨(media_volume)에서 관리한다.
